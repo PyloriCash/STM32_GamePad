@@ -38,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ADC_Channel 6
+#define ADC_Channel 4
 #define Axis_Channel 4
 #define Trigger_Channel 2
 #define Trigger_min 1100
@@ -62,7 +62,7 @@ uint8_t buffer[10] = {0};
 uint8_t buf[10] = {3, 5, 7, 9, 11, 13, 15, 19};
 uint16_t ADC_buffer[ADC_Channel] = {0};
 uint8_t axis_value[Axis_Channel] = {0};
-uint16_t Trigger_value[Trigger_Channel] = {0};
+// uint16_t Trigger_value[Trigger_Channel] = {0};
 uint8_t rx_buf[4];
 uint8_t tx_buf[4] = {0x55, 0x49, 0x48, 0x79};
 int16_t angle, u8angle;
@@ -145,7 +145,7 @@ int main(void)
       {
         angle = -angle;
       }
-      // 欧卡�?大一圈半，赛车最�?2700
+      // Euro truk max 1.5round, NFS max 3/4 round
       u8angle = angle * 127 / 2700 + 127;
       if (u8angle > 0xff)
       {
@@ -161,19 +161,19 @@ int main(void)
       axis_value[i] = (int8_t)(((int16_t)ADC_buffer[i] >> 4));
     }
     // Trigger_max = 3000, Trigger_min = 1200;
-    for (int i = 4; i <= 5; i++)
-    {
-      if (ADC_buffer[i] < Trigger_min)
-      {
-        Trigger_value[i - 4] = 0;
-      }
-      else
-      {
-        Trigger_value[i - 4] = (ADC_buffer[i] - 960) >> 3;
-        if (Trigger_value[i - 4] > 0xff)
-          Trigger_value[i - 4] = 0xff;
-      }
-    }
+    // for (int i = 4; i <= 5; i++)
+    // {
+    //   if (ADC_buffer[i] < Trigger_min)
+    //   {
+    //     Trigger_value[i - 4] = 0;
+    //   }
+    //   else
+    //   {
+    //     Trigger_value[i - 4] = (ADC_buffer[i] - 960) >> 3;
+    //     if (Trigger_value[i - 4] > 0xff)
+    //       Trigger_value[i - 4] = 0xff;
+    //   }
+    // }
     if (axis_value[1] > 250 || axis_value[1] < 20)
     {
       DS4_1.LeftXAxis = axis_value[1];
@@ -187,8 +187,8 @@ int main(void)
     DS4_1.RightXAxis = axis_value[3];
     DS4_1.RightYAxis = axis_value[2];
 
-    DS4_1.L2Trigger = (uint8_t)Trigger_value[0];
-    DS4_1.R2Trigger = (uint8_t)Trigger_value[1];
+    // DS4_1.L2Trigger = (uint8_t)Trigger_value[0];
+    // DS4_1.R2Trigger = (uint8_t)Trigger_value[1];
     DS4_1.L2 = (DS4_1.L2Trigger > 100) ? 1 : 0; // 可能导致不灵敏？
     DS4_1.R2 = (DS4_1.R2Trigger > 100) ? 1 : 0;
     //		USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, (uint8_t *)&buf, 7);
@@ -248,8 +248,8 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-// PB3~6 方向�?
-// PB12~15 形状�?
+// PB3~6 方向�??
+// PB12~15 形状�??
 void Key_Scan(void)
 {
   DS4_1.Left = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) ? 0 : 1;
@@ -266,6 +266,9 @@ void Key_Scan(void)
   DS4_1.L3 = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) ? 0 : 1;
   DS4_1.R1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7) ? 0 : 1;
   DS4_1.L1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9) ? 0 : 1;
+
+  DS4_1.L2Trigger = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_6) ? 0 : 0xff;
+  DS4_1.R2Trigger = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7) ? 0 : 0xff;
 
   // DS4_1.option = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8) ? 0 : 1;
   // DS4_1.power = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_7) ? 0 : 1;

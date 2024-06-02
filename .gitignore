@@ -46,3 +46,4 @@ EventRecorderStub.scvd
 RTE
 
 .vscode/
+MDK-ARM/.vscode/keil-assistant.log
